@@ -5,6 +5,7 @@ import be.Item;
 import be.Player;
 import be.Room;
 import bll.Command;
+import bll.CommandExecutor;
 import bll.CommandWord;
 import bll.Parser;
 
@@ -33,6 +34,8 @@ public class Game
     private Parser parser;
     private Player protagonist;
     private Stack<Room> previousRooms = new Stack<>();
+    boolean wantToQuit = false;
+    private CommandExecutor commandExecutor;
 
     /**
      * Create the game and initialise its internal map.
@@ -41,6 +44,7 @@ public class Game
     {
         createRooms();
         parser = new Parser();
+        commandExecutor = new CommandExecutor(this);
     }
 
     /**
@@ -124,151 +128,26 @@ public class Game
      */
     private boolean processCommand(Command command) 
     {
-        boolean wantToQuit = false;
         protagonist.reduceTurnsLeft();
         System.out.println("Turns left: " + protagonist.getTurnsLeft());
-        if(command.isUnknown()) {
-            System.out.println("I don't know what you mean...");
-            return false;
-        }
-
-        CommandWord commandWord = command.getCommandWord();
-
-
-            switch (commandWord) {
-                case GO -> goRoom(command);
-                case EAT -> eat(command);
-                case PICKUP -> pickup(command);
-                case DROP -> drop(command);
-                case USE -> use(command);
-                case HELP -> printHelp();
-                case LOOK -> look();
-                case SEARCH -> search();
-                case BACK -> back();
-                case QUIT -> wantToQuit = quit(command);
-            }
+        commandExecutor.execute(command);
         return wantToQuit;
     }
 
-    // implementations of user commands:
-
-    /**
-     * Print out some help information.
-     * Here we print some stupid, cryptic message and a list of the 
-     * command words.
-     */
-    private void printHelp() 
-    {
-        System.out.println("You are lost. You are alone. You wander");
-        System.out.println("around at the university.");
-        System.out.println();
-        System.out.println("Your command words are:");
-        parser.showCommands();
-    }
-
-    /** 
-     * Try to go in one direction. If there is an exit, enter
-     * the new room, otherwise print an error message.
-     */
-    private void goRoom(Command command) 
-    {
-        if(!command.hasSecondWord()) {
-            // if there is no second word, we don't know where to go...
-            System.out.println("Go where?");
-            return;
-        }
-
-        String direction = command.getSecondWord();
-
-        // Try to leave current room.
-        Room nextRoom = protagonist.getCurrentRoom().getExit(direction);
-
-        if (nextRoom == null) {
-            System.out.println("There is no door!");
-        }
-        else {
-            previousRooms.push(protagonist.getCurrentRoom());
-            protagonist.setCurrentRoom(nextRoom);
-            System.out.println(nextRoom.getLongDescription());
-        }
-    }
-
-    private void eat(Command command) {
-        if(!command.hasSecondWord()) {
-            // if there is no second word, we don't know where to go...
-            System.out.println("Eat what?");
-            return;
-        }
-
-        String item = command.getSecondWord();
-        System.out.println(protagonist.eat(item));
-    }
-
-    private void use(Command command) {
-        if(!command.hasSecondWord()) {
-            // if there is no second word, we don't know where to go...
-            System.out.println("Eat what?");
-            return;
-        }
-
-        String item = command.getSecondWord();
-        System.out.println(protagonist.use(item));
-    }
-
-    private void pickup(Command command) {
-        if(!command.hasSecondWord()) {
-            // if there is no second word, we don't know where to go...
-            System.out.println("Pickup what?");
-            return;
-        }
-
-        String item = command.getSecondWord();
-        System.out.println(protagonist.pickUpItem(item));
-
-    }
-
-    private void drop(Command command) {
-        if(!command.hasSecondWord()) {
-            // if there is no second word, we don't know where to go...
-            System.out.println("Drop what?");
-            return;
-        }
-        String item = command.getSecondWord();
-        System.out.println(protagonist.dropItem(item));
-
+    public Parser getParser() {
+        return parser;
     }
 
 
-    private void look()
-    {
-        System.out.println(protagonist.getCurrentRoom().getLongDescription());
+    public Player getProtagonist() {
+        return protagonist;
     }
 
-    private void search() {
-        System.out.println(protagonist.getCurrentRoom().getItemDescription());
+    public Stack<Room> getPreviousRooms() {
+        return previousRooms;
     }
 
-    private void back() {
-
-        if(!previousRooms.isEmpty()) {
-            protagonist.setCurrentRoom(previousRooms.pop());
-        }
-        System.out.println(protagonist.getCurrentRoom().getLongDescription());
-    }
-
-    /** 
-     * "Quit" was entered. Check the rest of the command to see
-     * whether we really quit the game.
-     * @return true, if this command quits the game, false otherwise.
-     */
-    private boolean quit(Command command) 
-    {
-        if(command.hasSecondWord()) {
-            System.out.println("Quit what?");
-            return false;
-        }
-        else {
-            return true;  // signal that we want to quit
-        }
+    public void setWantToQuit(boolean wantToQuit) {
+        this.wantToQuit = wantToQuit;
     }
 }

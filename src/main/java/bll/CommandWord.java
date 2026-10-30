@@ -2,7 +2,7 @@ package bll;
 
 public enum CommandWord {
     GO("go"), DROP("drop"), PICKUP("pickup"),
-    EAT("eat"), QUIT("quit"), HELP("hjælp"),
+    EAT("eat"), QUIT("quit"), HELP("help"),
     LOOK("look"), SEARCH("search"), BACK("back"),
     USE("use"),UNKNOWN(null);
 
