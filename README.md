@@ -1,2 +1,2 @@
 # bad-world-of-zuul
-Bad World of Zuul (needs refactoring)
+Bad World of gui.Zuul (needs refactoring)
